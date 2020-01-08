@@ -5,6 +5,28 @@ import XCTest
 
 final class RecorderTests: XCTestCase {
 
+  func testRecordingExistingValues() {
+    let publisher = CurrentValueSubject<Int, Never>.init(5)
+    let recorder = publisher.record(numberOfRecords: 1)
+
+    recorder.waitForAllValues()
+    XCTAssertRecordedValues(recorder, [5])
+  }
+
+  func testWaitingForCompletion() {
+    let publisher = PassthroughSubject<Int, Never>()
+    let recorder = publisher.record()
+
+    let queue = DispatchQueue.global(qos: .default)
+    queue.asyncAfter(deadline: .now() + 0.1) { publisher.send(1) }
+    queue.asyncAfter(deadline: .now() + 0.2) { publisher.send(2) }
+    queue.asyncAfter(deadline: .now() + 0.3) { publisher.send(3) }
+    queue.asyncAfter(deadline: .now() + 0.4) { publisher.send(completion: .finished) }
+
+    recorder.waitForAllValues()
+    XCTAssertRecordedValues(recorder, [1, 2, 3])
+  }
+
   func testWaitingForAllValues() {
     let publisher = PassthroughSubject<Int, Never>()
     let recorder = publisher.record(numberOfRecords: 3)
@@ -26,6 +48,7 @@ final class RecorderTests: XCTestCase {
     queue.asyncAfter(deadline: .now() + 0.1) { publisher.send(1) }
     queue.asyncAfter(deadline: .now() + 0.2) { publisher.send(2) }
 
+    recorder.waitForAllValues()
     XCTAssertRecordedValues(recorder, [1, 2])
   }
 
