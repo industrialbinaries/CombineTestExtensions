@@ -1,0 +1,28 @@
+name: Tests
+
+on: [push]
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_11.3.app/Contents/Developer
+
+jobs:
+  ios:
+    runs-on: macOS-latest
+    name: iOS
+    steps:
+      - uses: actions/checkout@v1
+      - run: set -o pipefail && xcodebuild test -scheme CombineTestExtensions -destination "name=iPhone 11" -disable-concurrent-destination-testing | xcpretty
+
+  macos:
+    runs-on: macOS-latest
+    name: macOS
+    steps:
+      - uses: actions/checkout@v1
+      - run: set -o pipefail && xcodebuild test -scheme CombineTestExtensions -disable-concurrent-destination-testing | xcpretty
+
+  tvos:
+    runs-on: macOS-latest
+    name: tvOS
+    steps:
+      - uses: actions/checkout@v1
+      - run: set -o pipefail && xcodebuild test -scheme CombineTestExtensions -destination "name=Apple TV 4K" -disable-concurrent-destination-testing | xcpretty
