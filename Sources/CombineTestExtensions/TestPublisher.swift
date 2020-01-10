@@ -1,44 +1,60 @@
+//
+//  CombineTestExtensions
+//
+//  Copyright (c) 2020 Industrial Binaries
+//  MIT license, see LICENSE file for details
+//
+
 import Combine
 import Foundation
 
-struct TestPublisher<Output, Failure: Error>: Publisher {
-
-  enum Event {
+/// A `Publisher` implementation allowing sending events using TestPublisher
+/// at predefined time.
+public struct TestPublisher<Output, Failure: Error>: Publisher {
+  public enum Value {
     case value(Output)
     case completion(Subscribers.Completion<Failure>)
   }
 
-  struct Record {
-    let time: TestScheduler.SchedulerTimeType
-    let value: Event
+  public struct Event {
+    public let time: TestScheduler.SchedulerTimeType
+    public let value: Value
   }
 
-  let scheduler: TestScheduler
+  public func receive<S>(subscriber: S) where S: Subscriber, Failure == S.Failure, Output == S.Input {
+    subscriber.receive(subscription: Subscription_(subscriber: subscriber, values: values, scheduler: scheduler))
+  }
 
-  init(values: [Record], scheduler: TestScheduler) {
-    self.values = values
+  /// Creates a new TestPublisher.
+  ///
+  /// - Parameters:
+  ///   - scheduler: Test scheduler to be used for sending the events.
+  ///   - events: The events to be sent by this publisher.
+  ///
+  public init(_ scheduler: TestScheduler, _ events: [(time: Int, event: Value)]) {
     self.scheduler = scheduler
+    values = events.map(Event.init)
   }
 
-  let values: [Record]
+  let values: [Event]
+  let scheduler: TestScheduler
+}
 
-  func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {
-    subscriber.receive(subscription: TestSubscription(subscriber: subscriber, values: values, scheduler: scheduler))
-  }
-
-  fileprivate class TestSubscription<S: Subscriber>: Subscription where Failure == S.Failure, Output == S.Input {
-
+extension TestPublisher {
+  private class Subscription_<S: Subscriber>: Subscription
+    where Failure == S.Failure, Output == S.Input {
     let s: S
-    let values: [Record]
+    let values: [Event]
     let scheduler: TestScheduler
 
-    init(subscriber: S, values: [Record], scheduler: TestScheduler) {
-      self.s = subscriber
+    init(subscriber: S, values: [Event], scheduler: TestScheduler) {
+      s = subscriber
       self.values = values
       self.scheduler = scheduler
     }
 
     func request(_ demand: Subscribers.Demand) {
+      // TODO: Handle demand?
       values
         .sorted { $0.time < $1.time }
         .forEach { record in
@@ -55,57 +71,7 @@ struct TestPublisher<Output, Failure: Error>: Publisher {
     }
 
     func cancel() {
-
+      // TODO: ?
     }
-
   }
 }
-
-//fileprivate final class TestablePublisherSubscription<Sink: Subscriber>: Subscription {
-//
-//    private let linkedList = LinkedList<Int>.empty
-//    private var queue: SinkQueue<Sink>?
-//    private var cancellables = [AnyCancellable]()
-//
-//    init(sink: Sink, testScheduler: TestScheduler, behavior: TestablePublisherBehavior, testSequence: TestSequence<Sink.Input, Sink.Failure>) {
-//
-//        let queue = SinkQueue(sink: sink)
-//
-//        testSequence.forEach { (time, signal) in
-//
-//            guard behavior == .relative || testScheduler.now <= time else { return }
-//            let due = behavior == .relative ? testScheduler.now + time : time
-//
-//            switch signal {
-//            case .subscription:
-//                assertionFailure("Illegal input. A `.subscription` event scheduled at \(time) will be ignored. Only a Subscriber can initiate a Subscription.")
-//                break
-//            case .input(let value):
-//                let cancellable = testScheduler.schedule(after: due, interval: 0) {
-//                    _ = queue.enqueue(value)
-//                }
-//                cancellables.append(AnyCancellable { cancellable.cancel() })
-//            case .completion(let completion):
-//                let cancellable = testScheduler.schedule(after: due, interval: 0) {
-//                    queue.expediteCompletion(completion)
-//                }
-//                cancellables.append(AnyCancellable { cancellable.cancel() })
-//            }
-//        }
-//
-//        self.queue = queue
-//    }
-//
-//    deinit {
-//        cancellables.forEach { $0.cancel() }
-//    }
-//
-//    func request(_ demand: Subscribers.Demand) {
-//        _ = queue?.requestDemand(demand)
-//    }
-//
-//    func cancel() {
-//        queue = nil
-//    }
-//}
-//

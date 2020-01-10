@@ -1,19 +1,18 @@
 //
-//  TestPublisherTests.swift
-//  CombineTestExtensionsTests
+//  CombineTestExtensions
 //
-//  Created by Vojta on 08/01/2020.
+//  Copyright (c) 2020 Industrial Binaries
+//  MIT license, see LICENSE file for details
 //
 
 @testable import CombineTestExtensions
 
-import XCTest
 import Combine
+import XCTest
 
 class TestPublisherTests: XCTestCase {
-
-  struct MockError: Error { }
-  struct MockError2: Error { }
+  struct MockError: Error {}
+  struct MockError2: Error {}
 
   var scheduler: TestScheduler!
 
@@ -23,20 +22,17 @@ class TestPublisherTests: XCTestCase {
   }
 
   func testPublisher() {
-    let publisher: TestPublisher<Int, Never> = .init(
-      values: [
-        .init(time: 10, value: .value(100)),
-        .init(time: 50, value: .value(500)),
-        .init(time: 20, value: .value(200)),
-        .init(time: 70, value: .completion(.finished)),
-        .init(time: 60, value: .value(600)),
-      ],
-      scheduler: scheduler
-    )
+    let publisher: TestPublisher<Int, Never> = .init(scheduler, [
+      (10, .value(100)),
+      (50, .value(500)),
+      (20, .value(200)),
+      (70, .completion(.finished)),
+      (60, .value(600)),
+    ])
 
     let records = publisher
       .record(scheduler: scheduler)
-      .waitForRecords()
+      .waitAndCollectTimedRecords()
 
     XCTAssertEqual(records, [
       (10, .value(100)),
@@ -48,17 +44,14 @@ class TestPublisherTests: XCTestCase {
   }
 
   func testPublisherWithError() {
-    let publisher: TestPublisher<Int, Error> = .init(
-      values: [
-        .init(time: 10, value: .value(100)),
-        .init(time: 50, value: .completion(.failure(MockError()))),
-      ],
-      scheduler: scheduler
-    )
+    let publisher: TestPublisher<Int, Error> = .init(scheduler, [
+      (10, .value(100)),
+      (50, .completion(.failure(MockError()))),
+    ])
 
     let records = publisher
       .record(scheduler: scheduler)
-      .waitForRecords()
+      .waitAndCollectTimedRecords()
 
     XCTAssertEqual(records, [
       (10, .value(100)),
