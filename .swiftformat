@@ -1,0 +1,4 @@
+--disable unusedArguments
+
+--indent 2
+--header "\n CombineTestExtensions\n\n Copyright (c) {year} Industrial Binaries\n MIT license, see LICENSE file for details\n"
