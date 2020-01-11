@@ -118,6 +118,6 @@ If you need more advanced test tools for `Combine`, check out [EntwineTest](http
 
 ## License and Credits
 
-**CombineTestExtensions** is released under the MIT license. See [LICENSE](https://github.com/industrialbinaries/CombineTestExtensions/blob/master/LICENSE) for details.
+**CombineTestExtensions** is released under the MIT license. See [LICENSE](/LICENSE) for details.
 
-Created by [Industrial Binaries](https://industrial-binaries.co).
+Created by [Vojta Stavik](https://twitter.com/vojtastavik) @ [Industrial Binaries](https://industrial-binaries.co).
