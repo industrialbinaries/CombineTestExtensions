@@ -10,7 +10,7 @@
 import XCTest
 
 final class TestSchedulerTests: XCTestCase {
-  func testSchedullingWorksCorrectly() {
+  func testSchedulingWorksCorrectly() {
     let scheduler = TestScheduler()
 
     var result: [Int] = []
