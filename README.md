@@ -120,4 +120,4 @@ If you need more advanced test tools for `Combine`, check out [EntwineTest](http
 
 Created by [Industrial Binaries](https://industrial-binaries.co).
 
-**CombineTestExtensions** is released under the MIT license. [See LICENSE](https://github.com/industrialbinaries/CombineTestExtensions/blob/master/LICENSE) for details.
+**CombineTestExtensions** is released under the MIT license. See [LICENSE](https://github.com/industrialbinaries/CombineTestExtensions/blob/master/LICENSE) for details.
